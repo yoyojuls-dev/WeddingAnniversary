@@ -40,16 +40,21 @@
         <div class="hero">
             <!-- Hero Background Image - Replace with your image -->
             <div class="hero-background">
-                <img src="mamapapa.jpg" alt="Our Story" class="hero-bg-image" id="heroImage">
+                <img src="1st.jpg" alt="Our Story" class="hero-bg-image" id="heroImage">
                 <div class="hero-overlay"></div>
             </div>
             
             <div class="hero-content">
                 <div class="hero-title">Bhodel Gallery</div>
-                <div class="hero-subtitle">A collection of beautiful moments, cherished memories, and the journey we've shared together.</div>
-                <button class="play-button" onclick="scrollToSection('diary')">
-                    <span>▶</span> Start Exploring
-                </button>
+                <div class="hero-subtitle">A collection of beautiful moments, cherished memories, and the journey we've shared together. Click the Play Button to start exploring.</div>
+                <div class="hero-buttons">
+                    <button class="play-button-icon" onclick="scrollToSection('diary')" aria-label="Start Exploring">
+                        <span>▶</span>
+                    </button>
+                    <button class="gcash-button-small" onclick="openGcashQR()">
+                        💳 GCASH QR CODE
+                    </button>
+                </div>
             </div>
         </div>
 

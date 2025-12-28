@@ -154,10 +154,17 @@ function openModal(title, date, content, image = '', section = '', index = -1) {
     const modalDate = document.getElementById('modalDate');
     const modalText = document.getElementById('modalText');
     const modalHeader = document.getElementById('modalHeader');
+    const modalTitleOverlay = document.querySelector('.modal-title-overlay');
 
     if (modalTitle) modalTitle.textContent = decodeHtml(title);
     if (modalDate) modalDate.textContent = decodeHtml(date);
     if (modalText) modalText.textContent = decodeHtml(content);
+    
+    // Remove phone number element if it exists (from QR code modal)
+    const phoneElement = modalTitleOverlay ? modalTitleOverlay.querySelector('.phone-number-copy') : null;
+    if (phoneElement) {
+        phoneElement.remove();
+    }
     
     // Store current state for navigation
     currentModalState.section = section;
@@ -176,6 +183,12 @@ function openModal(title, date, content, image = '', section = '', index = -1) {
             img.onerror = function() { this.style.display = 'none'; };
             modalHeader.appendChild(img);
         }
+    }
+    
+    // Show navigation buttons for regular modals
+    const navContainer = document.querySelector('.modal-nav-container');
+    if (navContainer && section !== 'gcash') {
+        navContainer.style.display = '';
     }
     
     // Update navigation buttons
@@ -306,6 +319,129 @@ function closeModal() {
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+}
+
+/**
+ * Opens the GCash QR Code modal
+ */
+function openGcashQR() {
+    // GCash QR code image path
+    const qrCodeImage = 'QRCODE.png';
+    const phoneNumber = '0991 946 7527';
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalHeader = document.getElementById('modalHeader');
+    const modalTitleOverlay = document.querySelector('.modal-title-overlay');
+    
+    if (modalTitle) modalTitle.textContent = 'GCASH QR CODE';
+    
+    // Store current state for navigation (disable navigation for QR code)
+    currentModalState.section = 'gcash';
+    currentModalState.index = -1;
+    
+    // Add QR code image to modal header
+    if (modalHeader) {
+        modalHeader.innerHTML = '';
+        
+        const img = document.createElement('img');
+        img.src = qrCodeImage;
+        img.alt = 'GCash QR Code';
+        img.onerror = function() { 
+            this.style.display = 'none';
+            const errorMsg = document.createElement('div');
+            errorMsg.textContent = 'QR Code image not found. Please add your QR code image and update the path in script.js';
+            errorMsg.style.cssText = 'color: white; padding: 20px; text-align: center;';
+            modalHeader.appendChild(errorMsg);
+        };
+        modalHeader.appendChild(img);
+    }
+    
+    // Add phone number below the title with copy functionality
+    if (modalTitleOverlay) {
+        // Check if phone number element already exists, if not create it
+        let phoneElement = modalTitleOverlay.querySelector('.phone-number-copy');
+        if (!phoneElement) {
+            phoneElement = document.createElement('div');
+            phoneElement.className = 'phone-number-copy';
+            phoneElement.innerHTML = `
+                <div class="copy-hint">Click to copy the number</div>
+                <div class="phone-number-row">
+                    <span class="phone-number-text">${phoneNumber}</span>
+                    <span class="copy-icon">📋</span>
+                </div>
+                <span class="copy-feedback">Copied!</span>
+            `;
+            phoneElement.onclick = function() {
+                // Copy to clipboard
+                navigator.clipboard.writeText(phoneNumber.replace(/\s/g, '')).then(function() {
+                    // Show feedback
+                    const feedback = phoneElement.querySelector('.copy-feedback');
+                    feedback.style.opacity = '1';
+                    feedback.style.transform = 'translateY(0)';
+                    
+                    setTimeout(function() {
+                        feedback.style.opacity = '0';
+                        feedback.style.transform = 'translateY(-10px)';
+                    }, 2000);
+                }).catch(function(err) {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = phoneNumber.replace(/\s/g, '');
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        const feedback = phoneElement.querySelector('.copy-feedback');
+                        feedback.style.opacity = '1';
+                        feedback.style.transform = 'translateY(0)';
+                        setTimeout(function() {
+                            feedback.style.opacity = '0';
+                            feedback.style.transform = 'translateY(-10px)';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                    }
+                    document.body.removeChild(textArea);
+                });
+            };
+            modalTitleOverlay.appendChild(phoneElement);
+        }
+    }
+    
+    // Hide navigation buttons for QR code - use !important to override mobile styles
+    const prevBtn = document.getElementById('modalPrevBtn');
+    const nextBtn = document.getElementById('modalNextBtn');
+    const prevArrow = document.getElementById('modalPrevArrow');
+    const nextArrow = document.getElementById('modalNextArrow');
+    const navContainer = document.querySelector('.modal-nav-container');
+    
+    if (prevBtn) {
+        prevBtn.style.display = 'none';
+        prevBtn.style.setProperty('display', 'none', 'important');
+    }
+    if (nextBtn) {
+        nextBtn.style.display = 'none';
+        nextBtn.style.setProperty('display', 'none', 'important');
+    }
+    if (prevArrow) {
+        prevArrow.style.display = 'none';
+        prevArrow.style.setProperty('display', 'none', 'important');
+    }
+    if (nextArrow) {
+        nextArrow.style.display = 'none';
+        nextArrow.style.setProperty('display', 'none', 'important');
+    }
+    if (navContainer) {
+        navContainer.style.display = 'none';
+        navContainer.style.setProperty('display', 'none', 'important');
+    }
+    
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
 }
 
