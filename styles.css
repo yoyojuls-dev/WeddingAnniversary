@@ -430,6 +430,26 @@ body {
     -webkit-user-drag: none;
 }
 
+/* Show mobile image by default, hide desktop image */
+.hero-bg-desktop {
+    display: none;
+}
+
+.hero-bg-mobile {
+    display: block;
+}
+
+/* Show desktop image on larger screens, hide mobile image */
+@media (min-width: 769px) {
+    .hero-bg-desktop {
+        display: block;
+    }
+    
+    .hero-bg-mobile {
+        display: none;
+    }
+}
+
 /* Ken Burns effect - slow zoom and pan */
 @keyframes kenBurns {
     0% {
