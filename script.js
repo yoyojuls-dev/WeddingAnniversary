@@ -337,8 +337,8 @@ function initTouchSwipe() {
         let isHorizontalScroll = false;
         let hasScrolled = false;
         
-        // Enable native touch scrolling
-        container.style.touchAction = 'pan-x';
+        // Enable native touch scrolling for both directions
+        container.style.touchAction = 'pan-x pan-y';
         
         container.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
@@ -409,6 +409,115 @@ function initTouchSwipe() {
             updateCarouselButtons();
         }, { passive: true });
     });
+    
+    // Enable smooth vertical scrolling when touching images
+    enableVerticalScrollOnImages();
+}
+
+/**
+ * Enable vertical scrolling when touching images
+ * This ensures users can scroll the page even when touching image elements
+ */
+function enableVerticalScrollOnImages() {
+    // Get all images in cards
+    const cardImages = document.querySelectorAll('.card-image img, .hero-bg-image, .modal-header img');
+    
+    cardImages.forEach(img => {
+        // Allow touch events but ensure scrolling works
+        img.style.touchAction = 'pan-y pan-x';
+        img.style.userSelect = 'none';
+        img.style.webkitUserDrag = 'none';
+        
+        // Add touch event listeners to allow scrolling (passive for performance)
+        img.addEventListener('touchstart', (e) => {
+            // Don't prevent default - allow native scrolling
+        }, { passive: true });
+        
+        img.addEventListener('touchmove', (e) => {
+            // Don't prevent default - allow native scrolling
+        }, { passive: true });
+    });
+    
+    // Also handle card containers to ensure scrolling works
+    const cards = document.querySelectorAll('.card, .card-image');
+    cards.forEach(card => {
+        card.style.touchAction = 'pan-y pan-x';
+        
+        // Allow vertical scrolling to propagate
+        let touchStartY = 0;
+        let touchStartX = 0;
+        
+        card.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            touchStartY = touch.clientY;
+            touchStartX = touch.clientX;
+        }, { passive: true });
+        
+        card.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 0) return;
+            
+            const touch = e.touches[0];
+            const deltaY = Math.abs(touch.clientY - touchStartY);
+            const deltaX = Math.abs(touch.clientX - touchStartX);
+            
+            // If vertical movement is greater, allow page scroll
+            if (deltaY > deltaX && deltaY > 10) {
+                // Allow default scroll behavior - don't prevent default
+                return true;
+            }
+        }, { passive: true });
+    });
+}
+
+// ========== MOBILE SCROLLING ENHANCEMENTS ==========
+/**
+ * Enhance mobile scrolling to work smoothly even when touching images
+ */
+function initMobileScrolling() {
+    // Ensure body allows smooth scrolling
+    document.body.style.overflowY = 'auto';
+    document.body.style.webkitOverflowScrolling = 'touch';
+    
+    // Add global touch handler to ensure vertical scrolling works
+    let touchStartY = 0;
+    let touchStartX = 0;
+    let isVerticalScroll = false;
+    
+    document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+        isVerticalScroll = false;
+    }, { passive: true });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 0) return;
+        
+        const touchMoveY = e.touches[0].clientY;
+        const touchMoveX = e.touches[0].clientX;
+        const deltaY = Math.abs(touchMoveY - touchStartY);
+        const deltaX = Math.abs(touchMoveX - touchStartX);
+        
+        // Determine scroll direction
+        if (deltaY > 10 && deltaY > deltaX) {
+            isVerticalScroll = true;
+        }
+        
+        // Allow default scroll behavior for vertical scrolling
+        if (isVerticalScroll) {
+            // Don't prevent default - allow native smooth scrolling
+            return true;
+        }
+    }, { passive: true });
+    
+    // Ensure all images allow scrolling
+    const allImages = document.querySelectorAll('img');
+    allImages.forEach(img => {
+        // Don't set pointer-events to none - we want clicks to work
+        // Just ensure touch-action allows scrolling
+        img.style.touchAction = 'pan-y pan-x';
+        img.style.userSelect = 'none';
+        img.style.webkitUserDrag = 'none';
+    });
 }
 
 // ========== INITIALIZATION ==========
@@ -424,6 +533,7 @@ window.addEventListener('load', () => {
     initInteractiveEffects();
     initCardParallax();
     initCardTiltAnimation();
+    initMobileScrolling();
 });
 
 // ========== ERROR HANDLING ==========
