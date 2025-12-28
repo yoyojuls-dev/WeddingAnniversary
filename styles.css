@@ -50,6 +50,8 @@ body {
     z-index: 9999;
     overflow: hidden;
     transition: opacity 0.5s ease, visibility 0.5s ease;
+    perspective: 1000px;
+    perspective-origin: center center;
 }
 
 .loading-screen.hidden {
@@ -85,6 +87,8 @@ body {
     background: #ffffff;
     z-index: 10000;
     overflow: hidden;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
 }
 
 /* Vertical Pleats/Folds Effect */
@@ -132,22 +136,24 @@ body {
 
 .curtain-left {
     left: 0;
-    animation: curtainOpenLeft 2.5s ease-in-out 1.5s forwards;
+    animation: curtainOpenLeft 2.5s cubic-bezier(0.4, 0.0, 0.2, 1) 0.5s forwards;
     box-shadow: 
         inset 20px 0 30px rgba(0, 0, 0, 0.08),
         0 0 50px rgba(0, 0, 0, 0.1);
     border-right: 1px solid rgba(0, 0, 0, 0.1);
     transform-origin: top center;
+    will-change: transform, opacity;
 }
 
 .curtain-right {
     right: 0;
-    animation: curtainOpenRight 2.5s ease-in-out 1.5s forwards;
+    animation: curtainOpenRight 2.5s cubic-bezier(0.4, 0.0, 0.2, 1) 0.5s forwards;
     box-shadow: 
         inset -20px 0 30px rgba(0, 0, 0, 0.08),
         0 0 50px rgba(0, 0, 0, 0.1);
     border-left: 1px solid rgba(0, 0, 0, 0.1);
     transform-origin: top center;
+    will-change: transform, opacity;
 }
 
 /* Floor Reflection Effect */
@@ -171,49 +177,73 @@ body {
     opacity: 0.6;
 }
 
-/* Curtain Opening Animation - Pulled Apart from Center Top */
+/* Curtain Opening Animation - Smooth Continuous Pulling Transition */
 @keyframes curtainOpenLeft {
     0% {
-        transform: translateX(0) translateY(0) scaleY(1);
+        transform: translateX(0) translateY(0) scaleY(1) rotateY(0deg);
         opacity: 1;
     }
-    20% {
-        transform: translateX(-15%) translateY(-5%) scaleY(0.98);
+    5% {
+        transform: translateX(-5%) translateY(-1%) scaleY(0.995) rotateY(-1deg);
+        opacity: 0.995;
+    }
+    15% {
+        transform: translateX(-18%) translateY(-3%) scaleY(0.98) rotateY(-3deg);
         opacity: 0.98;
     }
-    50% {
-        transform: translateX(-50%) translateY(-10%) scaleY(0.95);
-        opacity: 0.95;
+    30% {
+        transform: translateX(-40%) translateY(-6%) scaleY(0.96) rotateY(-6deg);
+        opacity: 0.94;
     }
-    80% {
-        transform: translateX(-85%) translateY(-15%) scaleY(0.9);
+    50% {
+        transform: translateX(-65%) translateY(-9%) scaleY(0.92) rotateY(-9deg);
         opacity: 0.85;
     }
+    70% {
+        transform: translateX(-85%) translateY(-12%) scaleY(0.87) rotateY(-12deg);
+        opacity: 0.65;
+    }
+    85% {
+        transform: translateX(-95%) translateY(-15%) scaleY(0.83) rotateY(-15deg);
+        opacity: 0.35;
+    }
     100% {
-        transform: translateX(-100%) translateY(-20%) scaleY(0.85);
+        transform: translateX(-100%) translateY(-18%) scaleY(0.8) rotateY(-18deg);
         opacity: 0;
     }
 }
 
 @keyframes curtainOpenRight {
     0% {
-        transform: translateX(0) translateY(0) scaleY(1);
+        transform: translateX(0) translateY(0) scaleY(1) rotateY(0deg);
         opacity: 1;
     }
-    20% {
-        transform: translateX(15%) translateY(-5%) scaleY(0.98);
+    5% {
+        transform: translateX(5%) translateY(-1%) scaleY(0.995) rotateY(1deg);
+        opacity: 0.995;
+    }
+    15% {
+        transform: translateX(18%) translateY(-3%) scaleY(0.98) rotateY(3deg);
         opacity: 0.98;
     }
-    50% {
-        transform: translateX(50%) translateY(-10%) scaleY(0.95);
-        opacity: 0.95;
+    30% {
+        transform: translateX(40%) translateY(-6%) scaleY(0.96) rotateY(6deg);
+        opacity: 0.94;
     }
-    80% {
-        transform: translateX(85%) translateY(-15%) scaleY(0.9);
+    50% {
+        transform: translateX(65%) translateY(-9%) scaleY(0.92) rotateY(9deg);
         opacity: 0.85;
     }
+    70% {
+        transform: translateX(85%) translateY(-12%) scaleY(0.87) rotateY(12deg);
+        opacity: 0.65;
+    }
+    85% {
+        transform: translateX(95%) translateY(-15%) scaleY(0.83) rotateY(15deg);
+        opacity: 0.35;
+    }
     100% {
-        transform: translateX(100%) translateY(-20%) scaleY(0.85);
+        transform: translateX(100%) translateY(-18%) scaleY(0.8) rotateY(18deg);
         opacity: 0;
     }
 }
@@ -225,7 +255,7 @@ body {
     transform: translate(-50%, -50%);
     text-align: center;
     z-index: 10002;
-    animation: fadeOutContent 0.5s ease-in-out 4s forwards;
+    animation: fadeOutContent 0.4s ease-out 2.2s forwards;
 }
 
 @keyframes fadeOutContent {
@@ -622,6 +652,7 @@ body {
     touch-action: pan-y pan-x; /* Allow both vertical and horizontal scrolling */
     user-select: none; /* Prevent text selection on cards */
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+    -webkit-touch-callout: none; /* Prevent iOS callout menu on long press */
 }
 
 .card::before {
@@ -679,6 +710,8 @@ body {
     overflow: hidden;
     border-radius: 12px;
     touch-action: pan-y pan-x; /* Allow scrolling when touching images */
+    pointer-events: auto; /* Ensure card images are clickable */
+    cursor: pointer; /* Show pointer cursor on hover */
 }
 
 /* Card Image Element - FULL CARD IMAGE */
@@ -694,6 +727,8 @@ body {
     touch-action: pan-y pan-x; /* Allow scrolling when touching images */
     user-select: none;
     -webkit-user-drag: none;
+    pointer-events: auto; /* Ensure images are clickable */
+    cursor: pointer; /* Show pointer cursor on hover */
 }
 
 /* If no image provided, show gradient background */
@@ -896,16 +931,19 @@ body {
 }
 
 .modal-content {
-    background: linear-gradient(135deg, rgba(26, 26, 26, 0.98) 0%, rgba(20, 20, 20, 0.98) 100%);
-    border-radius: 15px;
-    max-width: 800px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
+    background: transparent;
+    border-radius: 12px;
+    max-width: 95vw;
+    width: auto;
+    min-width: 300px;
+    max-height: 95vh;
+    overflow: hidden;
     position: relative;
-    border: 1px solid rgba(192, 192, 192, 0.2);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: slideUp 0.4s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -920,95 +958,67 @@ body {
 }
 
 .modal-header {
-    height: 300px;
-    background: linear-gradient(rgba(15, 15, 15, 0.6), rgba(20, 20, 20, 1)), 
-                linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 30%, #1a1a1a 70%, #0f0f0f 100%);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
+    width: 100%;
+    border-radius: 12px;
 }
 
 /* Modal Header Image */
 .modal-header img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    position: relative;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 75vh;
+    object-fit: contain;
+    object-position: center;
     z-index: 0;
+    display: block;
+    margin: 0 auto;
+    border-radius: 12px 12px 0 0;
 }
 
-/* Modal header overlay */
-.modal-header::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+/* Modal Title Overlay - Minimal space at bottom */
+.modal-title-overlay {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    flex-shrink: 0;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.4) 0%,
-        rgba(0, 0, 0, 0.6) 50%,
-        rgba(0, 0, 0, 0.8) 100%
-    );
-    z-index: 1;
-}
-
-.modal-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(192, 192, 192, 0.1) 50%, transparent 70%);
-    animation: shimmerModal 4s ease-in-out infinite;
-    z-index: 2;
-}
-
-@keyframes shimmerModal {
-    0%, 100% { transform: translateX(-100%) translateY(-100%); }
-    50% { transform: translateX(100%) translateY(100%); }
+    box-sizing: border-box;
 }
 
 .modal-body {
-    padding: 30px;
-    background: rgba(20, 20, 20, 0.9);
-    text-align: center;
+    display: none; /* Hide modal body - title is now in overlay */
 }
 
 .modal-title {
-    font-size: 36px;
-    font-weight: bold;
+    font-size: 24px;
+    font-weight: 600;
     color: #ffffff;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.8), 0 0 20px rgba(192, 192, 192, 0.3);
-    position: relative;
-    z-index: 3;
-    margin-bottom: 20px;
     text-align: center;
+    margin: 0;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .modal-date {
-    color: #c0c0c0;
-    font-size: 16px;
-    margin-bottom: 15px;
-    font-weight: 600;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    position: relative;
-    text-align: center;
+    display: none; /* Hide date in minimal design */
 }
 
-/* Modal date left border removed for centered layout */
-
 .modal-text {
-    font-size: 16px;
-    line-height: 1.6;
-    color: #d1d1d1;
+    display: none; /* Hide text in minimal design */
 }
 
 .close-modal {
@@ -1033,16 +1043,193 @@ body {
 }
 
 .close-modal:hover {
-    background: linear-gradient(135deg, rgba(60, 60, 60, 1), rgba(50, 50, 50, 1));
-    transform: rotate(90deg) scale(1.1);
-    box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
-    border-color: rgba(192, 192, 192, 0.5);
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Modal Navigation Arrow Buttons (Desktop/Tablet - Non-Mobile) */
+.modal-nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    z-index: 15;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    min-width: 50px;
+    min-height: 50px;
+}
+
+.modal-nav-arrow:hover {
+    background: rgba(0, 0, 0, 0.95);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.modal-nav-arrow:active {
+    transform: translateY(-50%) scale(0.9);
+    background: rgba(0, 0, 0, 1);
+}
+
+.modal-nav-arrow-prev {
+    left: 15px;
+}
+
+.modal-nav-arrow-next {
+    right: 15px;
+}
+
+.modal-nav-arrow span {
+    line-height: 1;
+    display: block;
+    margin-top: -2px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Modal Navigation Text Buttons (Mobile Only) */
+.modal-nav-container {
+    display: none; /* Hidden by default, shown only on mobile */
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 0 0 12px 12px;
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 20px;
+}
+
+.modal-nav-btn {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 15;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    min-width: 80px;
+    height: 40px;
+}
+
+.modal-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.modal-nav-btn:active {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.modal-nav-prev {
+    margin-right: auto;
+}
+
+.modal-nav-next {
+    margin-left: auto;
 }
 
 /* ========== RESPONSIVE DESIGN ========== */
 
+/* Desktop and Tablet - Show arrow buttons, hide text buttons */
+@media (min-width: 769px) {
+    .modal-nav-container {
+        display: none !important;
+    }
+    
+    .modal-nav-arrow {
+        display: none; /* Hidden by default, shown via JavaScript when available */
+    }
+    
+    /* Show arrows on hover for better UX, but respect inline styles from JavaScript */
+    .modal-content:hover .modal-nav-arrow[style*="display: flex"],
+    .modal-content:hover .modal-nav-arrow[style*="display:flex"] {
+        display: flex !important;
+    }
+    
+    /* Always show arrows when JavaScript explicitly sets display: flex */
+    .modal-nav-arrow[style*="display: flex"],
+    .modal-nav-arrow[style*="display:flex"] {
+        display: flex !important;
+    }
+}
+
+/* Mobile - Show text buttons, hide arrow buttons */
+@media (max-width: 768px) {
+    .modal-nav-container {
+        display: flex !important;
+    }
+    
+    .modal-nav-arrow {
+        display: none !important;
+    }
+}
+
 /* Tablet and below */
 @media (max-width: 1024px) {
+    /* Loading Screen - Tablet Optimizations */
+    .curtain-valance {
+        height: 50px;
+    }
+    
+    .curtain-left,
+    .curtain-right {
+        top: 50px;
+        height: calc(100% - 50px);
+    }
+    
+    .curtain-left {
+        animation: curtainOpenLeft 2.2s cubic-bezier(0.4, 0.0, 0.2, 1) 0.4s forwards;
+    }
+    
+    .curtain-right {
+        animation: curtainOpenRight 2.2s cubic-bezier(0.4, 0.0, 0.2, 1) 0.4s forwards;
+    }
+    
+    .loading-content {
+        animation: fadeOutContent 0.4s ease-out 2s forwards;
+    }
+    
+    .logo {
+        font-size: 54px;
+        letter-spacing: 5px;
+    }
+    
+    .subtitle {
+        font-size: 17px;
+        letter-spacing: 1.5px;
+    }
+    
     .hero {
         height: 60vh;
         padding: 0 40px;
@@ -1255,17 +1442,19 @@ body {
     }
     
     .modal-content {
-        max-height: 90vh;
+        max-height: 95vh;
+        max-width: 95vw;
         margin: auto;
     }
     
     .modal-header {
-        height: 200px;
-        padding: 20px;
+        padding: 15px;
     }
     
     .modal-header img {
-        object-fit: cover;
+        object-fit: contain;
+        max-width: 90vw;
+        max-height: 65vh;
     }
     
     .modal-title {
@@ -1296,6 +1485,28 @@ body {
         font-size: 26px;
         min-width: 40px;
         min-height: 40px;
+    }
+    
+    .modal-nav-container {
+        display: flex !important;
+        padding: 12px 15px;
+    }
+    
+    .modal-nav-btn {
+        padding: 10px 18px;
+        font-size: 13px;
+        min-width: 70px;
+        height: 38px;
+        display: flex !important; /* Always show on mobile */
+    }
+    
+    .modal-nav-btn:active {
+        transform: translateY(0);
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .modal-nav-arrow {
+        display: none !important;
     }
 }
 
@@ -1453,13 +1664,30 @@ body {
     }
     
     .modal-content {
-        max-height: 90vh;
+        max-height: 95vh;
+        max-width: 95vw;
+        width: auto;
+        min-width: 260px;
         margin: auto;
     }
     
     .modal-header {
-        height: 180px;
-        padding: 15px;
+        padding: 0;
+    }
+    
+    .modal-header img {
+        object-fit: contain;
+        max-width: 90vw;
+        max-height: 75vh;
+        border-radius: 12px;
+    }
+    
+    .modal-title-overlay {
+        padding: 8px 12px;
+    }
+    
+    .modal-title {
+        font-size: 16px;
     }
     
     .modal-header img {
@@ -1607,8 +1835,22 @@ body {
     }
     
     .modal-header {
-        height: 150px;
-        padding: 12px;
+        padding: 0;
+    }
+    
+    .modal-header img {
+        object-fit: contain;
+        max-width: 90vw;
+        max-height: 70vh;
+        border-radius: 12px;
+    }
+    
+    .modal-title-overlay {
+        padding: 6px 10px;
+    }
+    
+    .modal-title {
+        font-size: 14px;
     }
     
     .modal-title {
@@ -1657,6 +1899,27 @@ body {
         touch-action: pan-y pan-x;
         -webkit-user-drag: none;
         user-select: none;
+    }
+    
+    /* Modal navigation buttons - always visible and larger on touch devices */
+    .modal-nav-container {
+        padding: 12px 15px !important;
+    }
+    
+    .modal-nav-btn {
+        display: flex !important;
+        padding: 10px 18px !important;
+        font-size: 13px !important;
+        min-width: 70px !important;
+        height: 38px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .modal-nav-btn:active {
+        transform: translateY(0) !important;
+        background: rgba(255, 255, 255, 0.15) !important;
     }
     
     .card:hover {
@@ -1713,6 +1976,70 @@ body {
     .carousel-btn:active {
         opacity: 1;
         background: rgba(255, 255, 255, 0.95);
+    }
+}
+
+/* iPad specific optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+    /* iPad Portrait and Landscape */
+    .curtain-left,
+    .curtain-right {
+        /* Optimize for iPad performance */
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    
+    .loading-screen {
+        /* Ensure smooth rendering on iPad */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-perspective: 1000px;
+        perspective: 1000px;
+    }
+    
+    .logo {
+        font-size: 56px;
+        letter-spacing: 6px;
+    }
+    
+    .subtitle {
+        font-size: 18px;
+        letter-spacing: 2px;
+    }
+}
+
+/* iPad Portrait */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    .curtain-valance {
+        height: 55px;
+    }
+    
+    .curtain-left,
+    .curtain-right {
+        top: 55px;
+        height: calc(100% - 55px);
+    }
+}
+
+/* iPad Landscape */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .curtain-valance {
+        height: 45px;
+    }
+    
+    .curtain-left,
+    .curtain-right {
+        top: 45px;
+        height: calc(100% - 45px);
+    }
+    
+    .logo {
+        font-size: 52px;
+    }
+    
+    .subtitle {
+        font-size: 16px;
     }
 }
 
@@ -2006,48 +2333,30 @@ body {
     
     /* Modal */
     .modal {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(0, 0, 0, 0.85);
     }
     
     .modal-content {
-        background: linear-gradient(135deg, rgba(245, 245, 245, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);
-        border: 1px solid rgba(192, 192, 192, 0.3);
+        background: transparent;
+        border: none;
     }
     
     .modal-header {
-        background: linear-gradient(rgba(240, 240, 240, 0.6), rgba(255, 255, 255, 1)), 
-                    linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 30%, #ffffff 70%, #f5f5f5 100%);
+        background: transparent;
     }
     
-    .modal-header::after {
-        background: linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0.2) 0%,
-            rgba(255, 255, 255, 0.3) 50%,
-            rgba(255, 255, 255, 0.4) 100%
-        );
+    .modal-header img {
+        object-fit: contain;
+        max-width: 90vw;
+        max-height: 85vh;
     }
     
-    .modal-header::before {
-        background: linear-gradient(45deg, transparent 30%, rgba(0, 0, 0, 0.05) 50%, transparent 70%);
-    }
-    
-    .modal-body {
-        background: rgba(255, 255, 255, 0.9);
+    .modal-title-overlay {
+        background: rgba(0, 0, 0, 0.85);
     }
     
     .modal-title {
-        color: #1a1a1a;
-        text-shadow: 0 2px 15px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6);
-    }
-    
-    .modal-date {
-        color: #4a4a4a;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    }
-    
-    .modal-text {
-        color: #2a2a2a;
+        color: #ffffff;
     }
     
     .close-modal {

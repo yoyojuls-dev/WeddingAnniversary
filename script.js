@@ -9,13 +9,22 @@
  * @param {Object} item - The data object containing title, date, emoji, image, description, content
  * @returns {string} HTML string for the card
  */
-function createCard(item) {
+function createCard(item, section, index) {
     const imageHtml = item.image 
         ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none'">` 
         : '';
     
+    const cardData = {
+        title: escapeHtml(item.title),
+        date: escapeHtml(item.date),
+        content: escapeHtml(item.content),
+        image: item.image ? escapeHtml(item.image) : '',
+        section: section,
+        index: index
+    };
+    
     return `
-        <div class="card" onclick="openModal('${escapeHtml(item.title)}', '${escapeHtml(item.date)}', '${escapeHtml(item.content)}', '${item.image ? escapeHtml(item.image) : ''}')">
+        <div class="card" data-title="${cardData.title}" data-date="${cardData.date}" data-content="${cardData.content}" data-image="${cardData.image}" data-section="${cardData.section}" data-index="${cardData.index}">
             <div class="card-image">
                 ${imageHtml}
                 <div class="card-title-overlay">${item.title}</div>
@@ -42,31 +51,32 @@ function initializeCards() {
     // Generate diary cards
     const diaryContainer = document.getElementById('diaryCards');
     if (diaryContainer) {
-        diaryContainer.innerHTML = diaryEntries.map(item => createCard(item)).join('');
+        diaryContainer.innerHTML = diaryEntries.map((item, index) => createCard(item, 'diary', index)).join('');
     }
 
     // Generate journey cards
     const journeyContainer = document.getElementById('journeyCards');
     if (journeyContainer) {
-        journeyContainer.innerHTML = journeyMilestones.map(item => createCard(item)).join('');
+        journeyContainer.innerHTML = journeyMilestones.map((item, index) => createCard(item, 'journey', index)).join('');
     }
 
     // Generate memories cards
     const memoriesContainer = document.getElementById('memoriesCards');
     if (memoriesContainer) {
-        memoriesContainer.innerHTML = specialMemories.map(item => createCard(item)).join('');
+        memoriesContainer.innerHTML = specialMemories.map((item, index) => createCard(item, 'memories', index)).join('');
     }
 
     // Generate other pictures cards
     const othersContainer = document.getElementById('othersCards');
     if (othersContainer) {
-        othersContainer.innerHTML = otherPictures.map(item => createCard(item)).join('');
+        othersContainer.innerHTML = otherPictures.map((item, index) => createCard(item, 'others', index)).join('');
     }
     
     // Initialize carousel functionality after cards are created
     setTimeout(() => {
         initCarousels();
         initTouchSwipe();
+        initCardClickHandlers();
         // Initial button visibility update
         requestAnimationFrame(() => {
             updateCarouselButtons();
@@ -77,18 +87,18 @@ function initializeCards() {
 // ========== LOADING SCREEN ==========
 /**
  * Handles the loading screen animation with curtain effect
- * Shows content for 1.5s, then curtains open from bottom to top (2.5s), then reveals main content
+ * Shows content briefly, then curtains open with smooth continuous pulling transition (2.5s), then reveals main content
  */
 function handleLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const mainContent = document.getElementById('mainContent');
 
-    // Show main content after curtain animation completes (1.5s delay + 2.5s animation = 4s)
+    // Show main content after curtain animation completes (0.5s delay + 2.5s animation = 3s)
     setTimeout(() => {
         if (mainContent) {
             mainContent.classList.add('visible');
         }
-    }, 3800);
+    }, 2800);
     
     // Hide loading screen after curtain fully opens
     setTimeout(() => {
@@ -101,18 +111,44 @@ function handleLoadingScreen() {
                 }
             }, 500);
         }
-    }, 4200);
+    }, 3300);
 }
 
 // ========== MODAL FUNCTIONS ==========
+// Store current modal state for navigation
+let currentModalState = {
+    section: '',
+    index: -1
+};
+
+/**
+ * Gets the data array for a given section
+ */
+function getSectionData(section) {
+    switch(section) {
+        case 'diary':
+            return diaryEntries || [];
+        case 'journey':
+            return journeyMilestones || [];
+        case 'memories':
+            return specialMemories || [];
+        case 'others':
+            return otherPictures || [];
+        default:
+            return [];
+    }
+}
+
 /**
  * Opens the modal with content details
  * @param {string} title - The title to display
  * @param {string} date - The date to display
  * @param {string} content - The full content to display
  * @param {string} image - The image URL to display
+ * @param {string} section - The section name
+ * @param {number} index - The index in the section
  */
-function openModal(title, date, content, image = '') {
+function openModal(title, date, content, image = '', section = '', index = -1) {
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modalTitle');
     const modalDate = document.getElementById('modalDate');
@@ -122,6 +158,10 @@ function openModal(title, date, content, image = '') {
     if (modalTitle) modalTitle.textContent = decodeHtml(title);
     if (modalDate) modalDate.textContent = decodeHtml(date);
     if (modalText) modalText.textContent = decodeHtml(content);
+    
+    // Store current state for navigation
+    currentModalState.section = section;
+    currentModalState.index = index;
     
     // Add image to modal header if exists
     if (modalHeader) {
@@ -138,9 +178,123 @@ function openModal(title, date, content, image = '') {
         }
     }
     
+    // Update navigation buttons
+    updateModalNavigation();
+    
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+/**
+ * Updates the visibility of navigation buttons based on current position
+ */
+function updateModalNavigation() {
+    const prevBtn = document.getElementById('modalPrevBtn');
+    const nextBtn = document.getElementById('modalNextBtn');
+    const prevArrow = document.getElementById('modalPrevArrow');
+    const nextArrow = document.getElementById('modalNextArrow');
+    const sectionData = getSectionData(currentModalState.section);
+    const maxIndex = sectionData.length - 1;
+    const isMobile = window.innerWidth <= 768;
+    
+    // Handle text buttons (mobile)
+    if (prevBtn) {
+        if (currentModalState.index > 0) {
+            prevBtn.style.display = 'flex';
+            prevBtn.style.opacity = '1';
+            prevBtn.style.pointerEvents = 'all';
+        } else {
+            if (isMobile) {
+                // On mobile, show but make it disabled/transparent
+                prevBtn.style.display = 'flex';
+                prevBtn.style.opacity = '0.3';
+                prevBtn.style.pointerEvents = 'none';
+            } else {
+                prevBtn.style.display = 'none';
+            }
+        }
+    }
+    
+    if (nextBtn) {
+        if (currentModalState.index < maxIndex) {
+            nextBtn.style.display = 'flex';
+            nextBtn.style.opacity = '1';
+            nextBtn.style.pointerEvents = 'all';
+        } else {
+            if (isMobile) {
+                // On mobile, show but make it disabled/transparent
+                nextBtn.style.display = 'flex';
+                nextBtn.style.opacity = '0.3';
+                nextBtn.style.pointerEvents = 'none';
+            } else {
+                nextBtn.style.display = 'none';
+            }
+        }
+    }
+    
+    // Handle arrow buttons (desktop/tablet - non-mobile)
+    if (prevArrow) {
+        if (currentModalState.index > 0) {
+            prevArrow.style.display = 'flex';
+            prevArrow.style.opacity = '1';
+            prevArrow.style.pointerEvents = 'all';
+        } else {
+            prevArrow.style.display = 'none';
+        }
+    }
+    
+    if (nextArrow) {
+        if (currentModalState.index < maxIndex) {
+            nextArrow.style.display = 'flex';
+            nextArrow.style.opacity = '1';
+            nextArrow.style.pointerEvents = 'all';
+        } else {
+            nextArrow.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Navigate to previous image in the same section
+ */
+function navigateModalPrev() {
+    if (currentModalState.index <= 0) return;
+    
+    const sectionData = getSectionData(currentModalState.section);
+    const newIndex = currentModalState.index - 1;
+    
+    if (newIndex >= 0 && newIndex < sectionData.length) {
+        const item = sectionData[newIndex];
+        openModal(
+            item.title || '',
+            item.date || '',
+            item.content || '',
+            item.image || '',
+            currentModalState.section,
+            newIndex
+        );
+    }
+}
+
+/**
+ * Navigate to next image in the same section
+ */
+function navigateModalNext() {
+    const sectionData = getSectionData(currentModalState.section);
+    const newIndex = currentModalState.index + 1;
+    
+    if (newIndex < sectionData.length) {
+        const item = sectionData[newIndex];
+        openModal(
+            item.title || '',
+            item.date || '',
+            item.content || '',
+            item.image || '',
+            currentModalState.section,
+            newIndex
+        );
     }
 }
 
@@ -181,12 +335,21 @@ function setupModalClickOutside() {
 }
 
 /**
- * Close modal with Escape key
+ * Close modal with Escape key and navigate with arrow keys
  */
 function setupModalEscapeKey() {
     document.addEventListener('keydown', (e) => {
+        const modal = document.getElementById('modal');
+        if (!modal || !modal.classList.contains('active')) return;
+        
         if (e.key === 'Escape') {
             closeModal();
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateModalPrev();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateModalNext();
         }
     });
 }
@@ -317,6 +480,75 @@ function updateCarouselButtons() {
             rightBtn.style.pointerEvents = canScrollRight ? 'all' : 'none';
             rightBtn.disabled = !canScrollRight;
         }
+    });
+}
+
+/**
+ * Initialize click handlers for all cards to open modal
+ */
+function initCardClickHandlers() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        // Remove any existing click handlers
+        card.onclick = null;
+        
+        // Add click event listener
+        card.addEventListener('click', function(e) {
+            // Prevent default image zoom behavior
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const title = this.dataset.title || '';
+            const date = this.dataset.date || '';
+            const content = this.dataset.content || '';
+            const image = this.dataset.image || '';
+            const section = this.dataset.section || '';
+            const index = parseInt(this.dataset.index || '-1');
+            
+            if (title || image) {
+                openModal(title, date, content, image, section, index);
+            }
+        }, { passive: false });
+        
+        // Also handle touch events to prevent default zoom
+        card.addEventListener('touchend', function(e) {
+            // Only open modal if it's a tap, not a scroll
+            if (e.changedTouches.length === 1) {
+                const touch = e.changedTouches[0];
+                const startTouch = this.dataset.touchStart;
+                
+                if (startTouch) {
+                    const start = JSON.parse(startTouch);
+                    const deltaX = Math.abs(touch.clientX - start.x);
+                    const deltaY = Math.abs(touch.clientY - start.y);
+                    
+                    // If movement is small, treat as tap
+                    if (deltaX < 10 && deltaY < 10) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const title = this.dataset.title || '';
+                        const date = this.dataset.date || '';
+                        const content = this.dataset.content || '';
+                        const image = this.dataset.image || '';
+                        const section = this.dataset.section || '';
+                        const index = parseInt(this.dataset.index || '-1');
+                        
+                        if (title || image) {
+                            openModal(title, date, content, image, section, index);
+                        }
+                    }
+                }
+            }
+        }, { passive: false });
+        
+        // Track touch start for tap detection
+        card.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                this.dataset.touchStart = JSON.stringify({ x: touch.clientX, y: touch.clientY });
+            }
+        }, { passive: true });
     });
 }
 

@@ -122,13 +122,27 @@
     <div class="modal" id="modal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeModal()">×</button>
+            <!-- Arrow buttons for desktop/tablet (non-mobile) -->
+            <button class="modal-nav-arrow modal-nav-arrow-prev" id="modalPrevArrow" onclick="navigateModalPrev()" aria-label="Previous image">
+                <span>‹</span>
+            </button>
+            <button class="modal-nav-arrow modal-nav-arrow-next" id="modalNextArrow" onclick="navigateModalNext()" aria-label="Next image">
+                <span>›</span>
+            </button>
             <div class="modal-header" id="modalHeader">
                 <!-- Image will be inserted here -->
             </div>
-            <div class="modal-body">
+            <div class="modal-title-overlay">
                 <h2 class="modal-title" id="modalTitle"></h2>
-                <div class="modal-date" id="modalDate"></div>
-                <div class="modal-text" id="modalText"></div>
+            </div>
+            <!-- Text buttons for mobile only -->
+            <div class="modal-nav-container">
+                <button class="modal-nav-btn modal-nav-prev" id="modalPrevBtn" onclick="navigateModalPrev()" aria-label="Previous image">
+                    back
+                </button>
+                <button class="modal-nav-btn modal-nav-next" id="modalNextBtn" onclick="navigateModalNext()" aria-label="Next image">
+                    next
+                </button>
             </div>
         </div>
     </div>
